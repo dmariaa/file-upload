@@ -1,0 +1,136 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="file-upload">
+  <template>
+    <style>
+      :host {
+        display: block;
+        cursor: pointer;
+      }
+
+      :host(.over-disabled) {
+        border: 1px dotted #ff9090;
+      }
+
+      :host input[type=file] {
+        display: none;
+      }
+    </style>
+    <input id="input_file" name="[[name]]" accept="[[accept]]" type="file"
+           on-change="_uploadChangeHandler" />
+    <span>[[label]]</span>
+  </template>
+
+  <script>
+    /**
+     * `file-upload`
+     *
+     *
+     * @customElement
+     * @polymer
+     * @demo demo/index.html
+     */
+    class FileUpload extends Polymer.Element {
+      static get is() { return 'file-upload'; }
+      static get properties() {
+        return {
+          name: {
+            type: String,
+          },
+          value: {
+            type: String,
+            notify: true,
+            observer: '_valueChanged'
+          },
+          accept: {
+            type: String,
+            value: "*/*"
+          },
+          label: {
+            type: String,
+            value: "arrastra un fichero o haz click aqui"
+          }
+        };
+      }
+      constructor() {
+        super();
+        this._noDropHandlerBinded = this.noDropHandler.bind(this);
+      }
+      ready() {
+        super.ready();
+        this.addEventListener('click', this.tapHandler.bind(this));
+        this.addEventListener('dragenter', this.noopHandler.bind(this), false);
+        this.addEventListener('dragover', this.noopHandler.bind(this), false);
+        this.addEventListener('dragleave', this.dragLeave.bind(this), false);
+        this.addEventListener('drop', this.drop.bind(this), false);
+      }
+      connectedCallback() {
+        super.connectedCallback();
+        window.addEventListener('drop', this._noDropHandlerBinded, false);
+        window.addEventListener('dragover', this._noDropHandlerBinded, false);
+      }
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        window.removeEventListener('drop', this._noDropHandlerBinded);
+        window.removeEventListener('dragover', this._noDropHandlerBinded);
+      }
+      _uploadChangeHandler(event) {
+        var file = this.$.input_file.files[0];
+        this.set('label',file.name);
+      }
+      tapHandler(event) {
+        this.$.input_file.click();
+      }
+      noopHandler(event) {
+        var item_list = event.dataTransfer.items;
+        var valid = true;
+
+        if(item_list.length > 1) {
+          valid = false;
+        } else {
+          if(!this.filesAreValid(item_list)) {
+            valid = false;
+            if(!this.classList.contains('over-disabled'))
+              this.classList.add('over-disabled');
+          }
+        }
+
+        if(!valid) {
+          event.dataTransfer.effectAllowed = 'none';
+          event.dataTransfer.dropEffect = 'none';
+        }
+
+        event.stopPropagation();
+        event.preventDefault();
+        return false;
+      }
+      noDropHandler(e) {
+        e = e || event;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      drop(event) {
+        var file = event.dataTransfer.files[0];
+        this.$.input_file.files = event.dataTransfer.files;
+        event.stopPropagation();
+        event.preventDefault();
+        return false;
+      }
+      dragLeave(event) {
+        console.log("Leaving");
+        if(this.classList.contains('over-disabled'))
+          this.classList.remove('over-disabled');
+      }
+      filesAreValid(files) {
+        var validTypes = this.accept.split(",");
+        for(var i=0, length=files.length; i<length; ++i) {
+          if(validTypes.indexOf(files[i].type)===-1)
+            return false;
+        }
+        return true;
+      }
+    }
+
+    window.customElements.define(FileUpload.is, FileUpload);
+  </script>
+</dom-module>
