@@ -49,6 +49,18 @@
           label: {
             type: String,
             value: "arrastra un fichero o haz click aqui"
+          },
+          fileData: {
+            type: String,
+            notify: true
+          },
+          fileType: {
+            type: String,
+            notify: true
+          },
+          fileName: {
+            type: String,
+            notify: true
           }
         };
       }
@@ -74,9 +86,27 @@
         window.removeEventListener('drop', this._noDropHandlerBinded);
         window.removeEventListener('dragover', this._noDropHandlerBinded);
       }
+      clear() {
+        this.set('fileData', "");
+        this.set('fileType', "");
+        this.set('fileName', "");
+        this.$.input_file.value = undefined;
+      }
       _uploadChangeHandler(event) {
         var file = this.$.input_file.files[0];
+        this._loadFile(file);
         this.set('label',file.name);
+      }
+      _loadFile(file) {
+        var reader = new FileReader();
+
+        reader.addEventListener('load', function() {
+          this.set('fileData', reader.result);
+        });
+
+        this.set('fileType', file.type);
+        this.set('fileName', file.name);
+        reader.readAsDataURL(file);
       }
       tapHandler(event) {
         this.$.input_file.click();
@@ -123,6 +153,7 @@
       }
       filesAreValid(files) {
         var validTypes = this.accept.split(",");
+        if(validTypes.indexOf("*/*")!==-1 || validTypes.indexOf("*")!==-1) return true;
         for(var i=0, length=files.length; i<length; ++i) {
           if(validTypes.indexOf(files[i].type)===-1)
             return false;
