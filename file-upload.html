@@ -90,7 +90,7 @@
         this.set('fileData', "");
         this.set('fileType', "");
         this.set('fileName', "");
-        this.$.input_file.value = undefined;
+        this.$.input_file.value = "";
       }
       _uploadChangeHandler(event) {
         var file = this.$.input_file.files[0];
@@ -102,7 +102,7 @@
 
         reader.addEventListener('load', function() {
           this.set('fileData', reader.result);
-        });
+        }.bind(this));
 
         this.set('fileType', file.type);
         this.set('fileName', file.name);
