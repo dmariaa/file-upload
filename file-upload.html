@@ -18,7 +18,7 @@
     </style>
     <input id="input_file" name="[[name]]" accept="[[accept]]" type="file"
            on-change="_uploadChangeHandler" />
-    <span>[[label]]</span>
+    <span>[[_getLabel(label,fileName)]]</span>
   </template>
 
   <script>
@@ -95,7 +95,6 @@
       _uploadChangeHandler(event) {
         var file = this.$.input_file.files[0];
         this._loadFile(file);
-        this.set('label',file.name);
       }
       _loadFile(file) {
         var reader = new FileReader();
@@ -159,6 +158,12 @@
             return false;
         }
         return true;
+      }
+      _getLabel(label,fileName) {
+        if(fileName && fileName != "") {
+          return fileName;
+        }
+        return label;
       }
     }
 
