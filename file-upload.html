@@ -61,6 +61,11 @@
           fileName: {
             type: String,
             notify: true
+          },
+          fileSize: {
+            type: Number,
+            readOnly: true,
+            notify: true
           }
         };
       }
@@ -105,6 +110,7 @@
 
         this.set('fileType', file.type);
         this.set('fileName', file.name);
+        this.set('fileSize', file.size);
         reader.readAsDataURL(file);
       }
       tapHandler(event) {
